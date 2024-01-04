@@ -5,7 +5,7 @@ import yaml
 from argparse import ArgumentParser
 from tqdm import tqdm
 
-import imageio
+import imageio.v2 as imageio
 import numpy as np
 from skimage.transform import resize
 from skimage import img_as_ubyte
@@ -25,7 +25,7 @@ if sys.version_info[0] < 3:
 def load_checkpoints(config_path, checkpoint_path, gen, cpu=False):
 
     with open(config_path) as f:
-        config = yaml.load(f)
+        config = yaml.load(f,Loader=yaml.FullLoader)
 
     if gen == 'original':
         generator = OcclusionAwareGenerator(**config['model_params']['generator_params'],
@@ -33,7 +33,7 @@ def load_checkpoints(config_path, checkpoint_path, gen, cpu=False):
     elif gen == 'spade':
         generator = OcclusionAwareSPADEGenerator(**config['model_params']['generator_params'],
                                                  **config['model_params']['common_params'])
-
+        
     if not cpu:
         generator.cuda()
 
@@ -238,13 +238,14 @@ def find_best_frame(source, driving, cpu=False):
     return frame_num
 
 if __name__ == "__main__":
+    cwd = os.getcwd()
     parser = ArgumentParser()
-    parser.add_argument("--config", default='config/vox-256.yaml', help="path to config")
-    parser.add_argument("--checkpoint", default='', help="path to checkpoint to restore")
+    parser.add_argument("--config", default=cwd+'/files/vox-256-spade.yaml', help="path to config")
+    parser.add_argument("--checkpoint", default=cwd+'/files/00000189-checkpoint.pth.zip', help="path to checkpoint to restore")
 
-    parser.add_argument("--source_image", default='', help="path to source image")
-    parser.add_argument("--driving_video", default='', help="path to driving video")
-    parser.add_argument("--result_video", default='', help="path to output")
+    parser.add_argument("--source_image", default=cwd+'/files/source.jpg', help="path to source image")
+    parser.add_argument("--driving_video", default=cwd+'/files/3.mp4', help="path to driving video")
+    parser.add_argument("--result_video", default=cwd+'/files/result.mp4', help="path to output")
 
     parser.add_argument("--gen", default="spade", choices=["original", "spade"])
  
